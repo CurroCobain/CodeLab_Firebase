@@ -17,6 +17,7 @@ limitations under the License.
 package com.example.makeitso.screens.tasks
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory.Options
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.makeitso.R.drawable as AppIcon
 import com.example.makeitso.R.string as AppText
 import com.example.makeitso.common.composable.ActionToolbar
@@ -42,7 +45,15 @@ fun TasksScreen(
   openScreen: (String) -> Unit,
   viewModel: TasksViewModel = hiltViewModel()
 ) {
+
+  val tasks = viewModel
+    .tasks
+    .collectAsStateWithLifecycle(emptyList())
+  val options by viewModel.options
+
   TasksScreenContent(
+    tasks = tasks.value,
+    options = options,
     onAddClick = viewModel::onAddClick,
     onSettingsClick = viewModel::onSettingsClick,
     onTaskCheckChange = viewModel::onTaskCheckChange,
@@ -57,6 +68,8 @@ fun TasksScreen(
 @Composable
 @ExperimentalMaterialApi
 fun TasksScreenContent(
+  tasks: List<Task>,
+  options: List<String>,
   modifier: Modifier = Modifier,
   onAddClick: ((String) -> Unit) -> Unit,
   onSettingsClick: ((String) -> Unit) -> Unit,
@@ -86,11 +99,13 @@ fun TasksScreenContent(
 
       Spacer(modifier = Modifier.smallSpacer())
 
+
+
       LazyColumn {
-        items(emptyList<Task>(), key = { it.id }) { taskItem ->
+        items(tasks, key = { it.id }) { taskItem ->
           TaskItem(
+            options = options,
             task = taskItem,
-            options = listOf(),
             onCheckChange = { onTaskCheckChange(taskItem) },
             onActionClick = { action -> onTaskActionClick(openScreen, taskItem, action) }
           )
@@ -104,8 +119,17 @@ fun TasksScreenContent(
 @ExperimentalMaterialApi
 @Composable
 fun TasksScreenPreview() {
+  val task = Task(
+    title = "Task title",
+    flag = true,
+    completed = true
+  )
+  val options = TaskActionOption.getOptions(hasEditOption = true)
+
   MakeItSoTheme {
     TasksScreenContent(
+      tasks = listOf(task),
+      options = options,
       onAddClick = { },
       onSettingsClick = { },
       onTaskCheckChange = { },

@@ -70,9 +70,14 @@ class SignUpViewModel @Inject constructor(
       SnackbarManager.showMessage(AppText.password_match_error)
       return
     }
-
+    /**
+     * Intenta autenticarse y, si la llamada tiene éxito, pasa a la siguiente pantalla (la SettingsScreen ).
+     * Mientras ejecuta estas llamadas dentro de un bloque launchCatching , si ocurre un error en la primera línea,
+     * la excepción será capturada y manejada, y la segunda línea no será alcanzada en absoluto.
+      */
     launchCatching {
-      //TODO
+      accountService.linkAccount(email, password)
+      openAndPopUp(SETTINGS_SCREEN, SIGN_UP_SCREEN)
     }
   }
 }
